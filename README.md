@@ -1,2 +1,2 @@
-# Linkedin-Clone
-A (MERN) fullstack build linkedin Clone
+# LinkedIn-Clone
+A Linkedin Clone (MERN Stack)
