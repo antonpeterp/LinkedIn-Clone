@@ -4,12 +4,15 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import AuthContext from "./context/AuthContext.jsx";
 import UserContext from "./context/UserContext.jsx";
+import SocketContextProvider from "./context/SocketContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthContext>
       <UserContext>
-        <App />
+        <SocketContextProvider>
+          <App />
+        </SocketContextProvider>
       </UserContext>
     </AuthContext>
   </BrowserRouter>

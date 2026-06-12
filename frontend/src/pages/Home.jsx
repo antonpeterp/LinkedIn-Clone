@@ -7,6 +7,7 @@ import { PiNotePencil } from "react-icons/pi";
 import { IoMdAdd, IoMdImages } from "react-icons/io";
 import { RxCross1 } from "react-icons/rx";
 import EditProfile from "../components/EditProfile.jsx";
+import RightSidebar from "../components/RightSidebar.jsx";
 import axios from "axios";
 import {
   MdPublic,
@@ -320,7 +321,7 @@ const Home = () => {
         <Post />
       </div>
 
-      <div className="w-[25%] min-h-[200px] bg-[white] shadow-lg"></div>
+      <RightSidebar />
     </div>
   );
 };

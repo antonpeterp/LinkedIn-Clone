@@ -2,6 +2,8 @@ import express from "express";
 import {
   getCurrentUser,
   updateProfile,
+  toggleConnect,
+  getSuggestedUsers,
 } from "../controller/user.controllers.js";
 import isAuth from "../middleware/isAuth.js";
 import upload from "../middleware/multer.js";
@@ -17,5 +19,7 @@ userRouter.put(
   ]),
   updateProfile
 );
+userRouter.post("/connect/:userId", isAuth, toggleConnect);
+userRouter.get("/suggested", isAuth, getSuggestedUsers);
 
 export default userRouter;

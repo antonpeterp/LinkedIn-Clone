@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { authDataContext } from "../context/AuthContext.jsx";
 import axios from "axios";
 import { UserDataContext } from "../context/UserContext.jsx";
+import { FcGoogle } from "react-icons/fc";
 
 const Login = () => {
   const [show, setShow] = useState(false);
@@ -32,20 +33,19 @@ const Login = () => {
       setUserData(result.data);
       navigate("/");
       setErr("");
-      setLoading(false);
-      // clear form after success
-      setFormData({
-        email: "",
-        password: "",
-      });
+      setFormData({ email: "", password: "" });
     } catch (error) {
       setErr(error.response?.data?.message);
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = `${serverURL}/api/auth/google`;
+  };
+
   return (
     <div className="w-full min-h-screen bg-gray-100">
-      {/* Logo Section */}
+      {/* Logo */}
       <div className="p-6 lg:p-8">
         <img
           src={logo}
@@ -55,7 +55,7 @@ const Login = () => {
         />
       </div>
 
-      {/* Signup Form Section */}
+      {/* Form */}
       <div className="flex justify-center items-start mt-8">
         <form
           className="bg-white w-[350px] md:w-[400px] p-6 rounded-lg shadow-md"
@@ -83,7 +83,6 @@ const Login = () => {
               onChange={handleChange}
               className="w-full focus:outline-none"
             />
-
             <span
               className="absolute right-[18px] font-semibold text-[#0077B5] cursor-pointer"
               onClick={() => setShow((prev) => !prev)}
@@ -92,12 +91,30 @@ const Login = () => {
             </span>
           </div>
 
-          {err && <p className="text-center text-red-500"> {err}</p>}
+          {err && <p className="text-center text-red-500">{err}</p>}
+
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-full font-semibold hover:bg-blue-700 transition mt-[30px]"
           >
             Login
+          </button>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-4">
+            <div className="flex-1 h-[1px] bg-gray-300" />
+            <span className="text-gray-400 text-sm">or</span>
+            <div className="flex-1 h-[1px] bg-gray-300" />
+          </div>
+
+          {/* Google Button */}
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-full py-2 font-semibold text-gray-700 hover:bg-gray-50 transition"
+          >
+            <FcGoogle className="w-5 h-5" />
+            Continue with Google
           </button>
 
           <p className="text-center mt-[10px]">

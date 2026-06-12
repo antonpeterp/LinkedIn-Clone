@@ -1,5 +1,5 @@
 import User from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js"; // make sure this import exists
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 export const getCurrentUser = async (req, res) => {
   try {
@@ -19,25 +19,18 @@ export const updateProfile = async (req, res) => {
   try {
     let { firstName, lastName, userName, headline, location, gender } =
       req.body;
-
-    // BUG 1: req.body.experien was a typo — should be req.body.experience
     let skills = req.body.skills ? JSON.parse(req.body.skills) : [];
     let education = req.body.education ? JSON.parse(req.body.education) : [];
-    let experience = req.body.experience ? JSON.parse(req.body.experience) : []; // fixed typo
-
+    let experience = req.body.experience ? JSON.parse(req.body.experience) : [];
     let profileImage;
     let coverImage;
 
-    // BUG 2: req.files can be undefined if no files were uploaded — must guard it
     if (req.files?.profileImage) {
       profileImage = await uploadOnCloudinary(req.files.profileImage[0].path);
     }
     if (req.files?.coverImage) {
       coverImage = await uploadOnCloudinary(req.files.coverImage[0].path);
     }
-
-    // BUG 3: { new: true }.select("password") is wrong — .select() is a mongoose
-    // method on the query, not on the options object. Also should be "-password"
     let user = await User.findByIdAndUpdate(
       req.userId,
       {
@@ -54,11 +47,58 @@ export const updateProfile = async (req, res) => {
         ...(coverImage && { coverImage: coverImage.secure_url }),
       },
       { new: true }
-    ).select("-password"); // fixed: chained correctly, excludes password
+    ).select("-password");
 
     return res.status(200).json(user);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Update Profile Error" });
+  }
+};
+export const toggleConnect = async (req, res) => {
+  try {
+    const targetUserId = req.params.userId;
+    const currentUserId = req.userId;
+
+    if (targetUserId === currentUserId) {
+      return res
+        .status(400)
+        .json({ message: "You can't connect with yourself" });
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    const alreadyConnected = currentUser.connection.includes(targetUserId);
+
+    if (alreadyConnected) {
+      await User.findByIdAndUpdate(currentUserId, {
+        $pull: { connection: targetUserId },
+      });
+    } else {
+      await User.findByIdAndUpdate(currentUserId, {
+        $push: { connection: targetUserId },
+      });
+    }
+
+    const updatedUser = await User.findById(currentUserId);
+    return res.status(200).json({ connection: updatedUser.connection });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getSuggestedUsers = async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.userId);
+
+    // get all users except current user and already connected users
+    const users = await User.find({
+      _id: { $ne: req.userId, $nin: currentUser.connection },
+    })
+      .select("-password")
+      .limit(5);
+
+    return res.status(200).json(users);
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

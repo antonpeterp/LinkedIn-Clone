@@ -1,8 +1,59 @@
 import genToken from "../config/token.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
-// authentication related routes
+export const initPassport = () => {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_PWD,
+        callbackURL: "/api/auth/google/callback",
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          let user = await User.findOne({ email: profile.emails[0].value });
+
+          if (!user) {
+            user = await User.create({
+              firstName: profile.name.givenName,
+              lastName: profile.name.familyName,
+              userName: profile.emails[0].value.split("@")[0] + Date.now(),
+              email: profile.emails[0].value,
+              password: await bcrypt.hash(Math.random().toString(36), 10),
+              profileImage: profile.photos[0]?.value || "",
+            });
+          }
+
+          return done(null, user);
+        } catch (err) {
+          return done(err, null);
+        }
+      }
+    )
+  );
+};
+
+export const googleCallback = async (req, res) => {
+  try {
+    const user = req.user;
+    const token = await genToken(user._id);
+    res.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+    // redirect to frontend after successful login
+    res.redirect("http://localhost:5173");
+  } catch (err) {
+    console.log(err);
+    res.redirect("http://localhost:5173/login");
+  }
+};
+
 export const signUp = async (req, res) => {
   try {
     let { firstName, lastName, userName, email, password } = req.body;

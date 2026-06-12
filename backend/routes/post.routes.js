@@ -1,5 +1,10 @@
 import express from "express";
-import { createPost, getPost } from "../controller/post.controller.js";
+import {
+  createPost,
+  getPost,
+  likePost,
+  commentPost,
+} from "../controller/post.controller.js";
 import upload from "../middleware/multer.js";
 import isAuth from "../middleware/isAuth.js";
 
@@ -16,5 +21,7 @@ postRouter.post(
 );
 
 postRouter.get("/getpost", isAuth, getPost);
+postRouter.post("/like/:postId", isAuth, likePost);
+postRouter.post("/comment/:postId", isAuth, commentPost);
 
 export default postRouter;
